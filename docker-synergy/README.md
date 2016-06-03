@@ -70,8 +70,68 @@ synergys -f --config /etc/synergy.conf
 synergyc -f nuc
 ```
 
+Next we need to setup systemd unit files to enable starting on boot.  Note the file is based on user (thus the synergys@)
+```
+# Create a Synergy Server systemd file
+sudo su - 
+cat << EOF > /lib/systemd/system/synergys@.service
+[Unit]
+Description=Synergy for sharing mouse and keyboard
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/synergys -f -d WARNING -c /etc/synergy.conf -l /var/log/synergy.log --enable-crypto
+ExecStop=/bin/kill -WINCH \${MAINPID}
+User=%i
+
+[Install]
+WantedBy=multi-user.target
+EOF
+exit
+
+# As your user logging into the desktop
+sudo systemctl daemon-reload
+sudo systemctl enable synergys@$(whoami)
+sudo systemctl start synergys@$(whoami)
+sudo systemctl status synergys@$(whoami)
+sudo systemctl stop synergys@$(whoami)
+
+# Create a Synergy Client systemd file
+### Note that the host name I'm connecting to 'nuc' must be resolvable.  Also, it's hard coded.  There might be a better way to do this...
+
+# Validate your display matches what is below in the start command
+echo $DISPLAY
+
+sudo su -
+cat << EOF > /lib/systemd/system/synergyc@.service
+[Unit]
+Description=Synergy for sharing mouse and keyboard
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/synergyc -f -d WARNING -l /var/log/synergy.log --enable-crypto --display :1 nuc 
+ExecStop=/bin/kill -WINCH \${MAINPID}
+User=%i
+
+[Install]
+WantedBy=multi-user.target
+EOF
+exit
+
+# As your user logging into the desktop
+sudo systemctl daemon-reload
+sudo systemctl enable synergyc@$(whoami)
+sudo systemctl start synergyc@$(whoami)
+sudo systemctl status synergyc@$(whoami)
+
+```
+
+At this point things should be functioning properly on server and client now and at boot time.  Keep in mind if the server is down when the client boots, it will not connect properly... 
+
+Overall I dislike the client startup script.  Mainly I don't like the hardcoded host name and display.  However, I've not found a quick alternative.
 
 ## References
 * https://www.mattcutts.com/blog/how-to-configure-synergy-in-six-steps/
 * http://www.thegeekstuff.com/2014/03/synergy-share-keyboard-mouse/
+* https://jackiechen.org/2014/10/24/configure-synergy-as-systemd-service/
 * https://hub.docker.com/r/sebgregoire/synergy/

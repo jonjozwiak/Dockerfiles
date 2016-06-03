@@ -109,8 +109,12 @@ Description=Synergy for sharing mouse and keyboard
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/synergyc -f -d WARNING -l /var/log/synergy.log --enable-crypto --display :1 nuc 
-ExecStop=/bin/kill -WINCH \${MAINPID}
+###Don't run in foreground.  It hangs over time...
+###ExecStart=/usr/bin/synergyc -f -d WARNING -l /var/log/synergy.log --enable-crypto --display :1 nuc 
+# Run as daemon is more stable
+Type=oneshot
+RemainAfterExit=True
+ExecStart=/usr/bin/synergys -d WARNING -c /etc/synergy.conf -l /tmp/synergy.log --enable-crypto
 User=%i
 
 [Install]

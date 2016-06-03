@@ -114,7 +114,7 @@ After=network.target
 # Run as daemon is more stable
 Type=oneshot
 RemainAfterExit=True
-ExecStart=/usr/bin/synergys -d WARNING -c /etc/synergy.conf -l /tmp/synergy.log --enable-crypto
+ExecStart=/usr/bin/synergys -d WARNING -c /etc/synergy.conf -l /tmp/synergy.log --enable-crypto --restart
 User=%i
 
 [Install]

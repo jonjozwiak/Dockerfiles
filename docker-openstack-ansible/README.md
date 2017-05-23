@@ -1,6 +1,6 @@
 # docker-openstack-ansible
 
-This is a docker image for Ansible 2.1's OpenStack modules.  This was mainly built because Fedora 24 is the first release to include a python shade RPM.  However, I soon learned that python2-shade 1.4 has some bugs and it wasn't really usable.  So I switched the container to a pip install shade which gives version 1.9.
+This is a docker image for Ansible OpenStack Modules.  Dockerfile.24 was the original for Fedora 24 (the first release to include a python shade rpm)  However, the python2-shade 1.4 rpm has some bugs and it wasn't really usable.  So I switched the container to a pip install shade which gives version 1.9.  This has since been updated to Fedora 25
 
 ## Build the container
 

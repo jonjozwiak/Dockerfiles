@@ -1,0 +1,40 @@
+FROM fedora:25
+MAINTAINER Jon Jozwiak
+
+# Update packages, install shade library and OpenStack Clients
+RUN dnf -y update && dnf clean all
+RUN dnf -y install ansible openssh openssh-clients python-heatclient python2-shade iputils bind-utils gcc python-devel redhat-rpm-config && dnf clean all 
+
+# Upgrade to latest shade
+RUN pip install --upgrade shade 
+
+#### ADDED TO UPGRADE FROM ANSIBLE 2.1 / SHADE 1.9 TO ANSIBLE 2.2 FOR TESTING ####
+### NOTE - I can't find a greater version of shade.  So my ansible 2.2 router create is failing...
+#RUN dnf -y install git gcc python-devel libffi-devel redhat-rpm-config openssl-devel && dnf clean all 
+#
+#RUN pip install -vvvv -U -e git+https://github.com/ansible/ansible.git@devel#egg=ansible
+#RUN pip install -vvvv -U -e git+https://github.com/openstack-infra/shade.git@master#egg=shade
+##################################################################################
+
+
+# Workaround to enable ping to function
+RUN setcap cap_net_raw,cap_net_admin+p /usr/bin/ping
+
+RUN mkdir -p /root/.ssh && chmod 700 /root/.ssh
+
+ADD ./files/id_rsa /root/.ssh
+ADD ./files/id_rsa.pub /root/.ssh
+RUN chmod 600 /root/.ssh/*
+
+# Disable host key checking in Ansible
+ADD ./files/ansible.cfg /root/.ansible.cfg
+
+# Volume mount your ansible playbooks and inventory 
+RUN mkdir /ansible
+
+VOLUME /ansible
+
+WORKDIR /ansible
+
+ENTRYPOINT "/bin/bash"
+
